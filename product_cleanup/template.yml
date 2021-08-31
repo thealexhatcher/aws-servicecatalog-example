@@ -1,0 +1,50 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Lambda Function
+Resources:
+  Function:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: python3.8
+      Role: !GetAtt LambdaRole.Arn
+      Handler: handler.function
+      Timeout: 120
+      Code: ./package
+      TracingConfig:
+        Mode: Active
+      Environment:
+        Variables:
+          PROVISIONED_PRODUCT_MAX_TTL_SEC: 3600
+      Events:
+        CheckProductScheduledEvent:
+          Type: Schedule
+          Properties:
+            Schedule: rate(1 minute)
+
+  LambdaRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - lambda.amazonaws.com
+          Action:
+          - sts:AssumeRole
+      Policies:
+        - PolicyName: policy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+            - Effect: Allow
+              Action:
+                - "logs:CreateLogGroup"
+                - "logs:CreateLogStream"
+                - "logs:PutLogEvents"
+              Resource: "*"
+      Path: "/"
+
+Outputs:
+  FunctionArn: 
+    Value: !GetAtt Function.Arn

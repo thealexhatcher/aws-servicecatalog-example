@@ -1,0 +1,89 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: | 
+  Portfolio Resource Stack
+
+Parameters:
+  Product1Template:
+    Type: String
+
+Resources:
+  Portfolio:
+    Type: "AWS::ServiceCatalog::Portfolio"
+    Properties:
+      ProviderName: 'Product Portfolio'
+      Description: 'Product Portfolio'
+      DisplayName: 'Product Portfolio'
+
+  Product1:
+    Type: AWS::ServiceCatalog::CloudFormationProduct
+    Properties:
+      Name: Product1
+      Distributor: "IT"
+      Owner: "IT"
+      SupportDescription: "Please call any time for support"
+      SupportEmail: "info@example.com"
+      SupportUrl: "https://www.example.com"
+      ProvisioningArtifactParameters:
+      - Name: 1.0
+        Info:
+          LoadTemplateFromURL: !Ref Product1Template
+
+  Role:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - servicecatalog.amazonaws.com
+          Action:
+          - sts:AssumeRole
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/AdministratorAccess'
+      Path: "/"
+        
+  PortfolioProduct1Association:
+    Type: "AWS::ServiceCatalog::PortfolioProductAssociation"
+    DependsOn: Product1
+    Properties:
+      PortfolioId: !Ref Portfolio
+      ProductId: !Ref Product1
+
+  LaunchRoleConstraint:
+    Type: AWS::ServiceCatalog::LaunchRoleConstraint
+    Properties: 
+      AcceptLanguage: 'en'
+      PortfolioId: !Ref Portfolio
+      ProductId: !Ref Product1
+      RoleArn: !GetAtt Role.Arn
+
+  PortfolioGroup:
+    Type: "AWS::IAM::Group"
+    Properties:
+      GroupName: "portfolio_group"
+      ManagedPolicyArns: 
+        - arn:aws:iam::aws:policy/AWSServiceCatalogEndUserFullAccess
+
+  PortfolioPrincipalAssociation:
+    Type: "AWS::ServiceCatalog::PortfolioPrincipalAssociation"
+    Properties:
+      PortfolioId: !Ref Portfolio
+      PrincipalARN: !GetAtt PortfolioGroup.Arn
+      PrincipalType: "IAM"
+
+  #ScheduledEvent:
+  #  Type: AWS::CloudFormation::Stack
+  #  Properties: 
+  #    TemplateURL: ./product_cleanup/template.out.yml
+  #Parameters: 
+
+Outputs:
+  PortfolioID:
+    Value: !Ref Portfolio
+  Product1ID:  
+    Value: !Ref Product1
+  PortfolioGroupName:
+    Value: !Ref PortfolioGroup
+
