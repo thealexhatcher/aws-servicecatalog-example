@@ -73,12 +73,11 @@ Resources:
       PrincipalARN: !GetAtt PortfolioGroup.Arn
       PrincipalType: "IAM"
 
-  #ScheduledEvent:
-  #  Type: AWS::CloudFormation::Stack
-  #  Properties: 
-  #    TemplateURL: ./product_cleanup/template.out.yml
-  #Parameters: 
-
+  ScheduledEvent:
+    Type: AWS::CloudFormation::Stack
+    Properties: 
+      TemplateURL: ./product_cleanup/template.out.yml
+  
 Outputs:
   PortfolioID:
     Value: !Ref Portfolio

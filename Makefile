@@ -12,7 +12,6 @@ validate:
 	aws cloudformation validate-template --template-body file://product_cleanup/template.yml --output text
 	aws cloudformation validate-template --template-body file://cfn_product1.yml --output text
 	aws cloudformation validate-template --template-body file://cfn_portfolio.yml --output text
-	aws cloudformation validate-template --template-body file://cfn_product1_provisioned.yml --output text
 
 build: validate clean 
 	cd product_cleanup \

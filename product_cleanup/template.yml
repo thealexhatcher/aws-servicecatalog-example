@@ -1,4 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
 Description: Lambda Function
 Resources:
   Function:
@@ -8,17 +9,15 @@ Resources:
       Role: !GetAtt LambdaRole.Arn
       Handler: handler.function
       Timeout: 120
-      Code: ./package
-      TracingConfig:
-        Mode: Active
+      CodeUri: ./package
       Environment:
         Variables:
-          PROVISIONED_PRODUCT_MAX_TTL_SEC: 3600
+          PROVISIONED_PRODUCT_MAX_TTL_SEC: 86400
       Events:
         CheckProductScheduledEvent:
           Type: Schedule
           Properties:
-            Schedule: rate(1 minute)
+            Schedule: rate(15 minutes)
 
   LambdaRole:
     Type: "AWS::IAM::Role"
@@ -33,7 +32,7 @@ Resources:
           Action:
           - sts:AssumeRole
       Policies:
-        - PolicyName: policy
+        - PolicyName: logs_policy
           PolicyDocument:
             Version: 2012-10-17
             Statement:
@@ -42,6 +41,15 @@ Resources:
                 - "logs:CreateLogGroup"
                 - "logs:CreateLogStream"
                 - "logs:PutLogEvents"
+              Resource: "*"
+        - PolicyName: sc_policy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+            - Effect: Allow
+              Action:
+                - "servicecatalog:ScanProvisionedProducts"
+                - "servicecatalog:TerminateProvisionedProduct"
               Resource: "*"
       Path: "/"
 
